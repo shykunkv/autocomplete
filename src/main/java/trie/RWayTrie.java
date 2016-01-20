@@ -1,25 +1,35 @@
 package trie;
 
 
-import javafx.util.Pair;
-
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import java.util.Queue;
 
+
+/**
+ * Implementation of the trie
+ * @param <T> weights type
+ */
 public class RWayTrie<T> implements Trie<T> {
 
-    private static int R = 26;
-    private TrieNode root;
-    private int size;
+    private static int R = 26; // number of possible childs for every node
+    private TrieNode root; // trie root
+    private int size; // number of words in trie
 
     public RWayTrie() {
         size = 0;
     }
 
+
     private class TrieNode {
+        /**
+         * Mark that some nodes are last letters in words
+         */
         private T value;
+        /**
+         * Next letters
+         */
         private TrieNode[] next;
 
         private TrieNode() {
@@ -32,32 +42,36 @@ public class RWayTrie<T> implements Trie<T> {
         root = add(root, tuple.getTerm(), tuple.getWeight(), 0);
     }
 
-    private TrieNode add(TrieNode node, String key, T value, int index) {
-        if (node == null) node = new TrieNode();
+    private TrieNode add(TrieNode node, String key, T value, int depth) {
+        if (node == null) {
+            node = new TrieNode();
+        }
 
-        if (index == key.length()) {
-            if (node.value == null) size++;
+        if (depth == key.length()) {
+            if (node.value == null) {
+                size++;
+            }
             node.value = value;
             return node;
         }
 
-        char ch = key.charAt(index);
-        node.next[ch - 'a'] = add(node.next[ch - 'a'], key, value, index + 1);
+        char ch = key.charAt(depth);
+        node.next[ch - 'a'] = add(node.next[ch - 'a'], key, value, depth + 1);
         return node;
     }
 
-    public T get(String key) {
+    private T get(String key) {
         TrieNode node = get(root, key, 0);
         if (node == null) return null;
         return node.value;
     }
 
-    private TrieNode get(TrieNode node, String key, int index) {
+    private TrieNode get(TrieNode node, String key, int depth) {
         if (node == null) return null;
-        if (index == key.length()) return node;
+        if (depth == key.length()) return node;
 
-        char ch = key.charAt(index);
-        return get(node.next[ch - 'a'], key, index + 1);
+        char ch = key.charAt(depth);
+        return get(node.next[ch - 'a'], key, depth + 1);
     }
 
     public boolean contains(String word) {
@@ -72,17 +86,20 @@ public class RWayTrie<T> implements Trie<T> {
         else return false;
     }
 
-    private TrieNode delete(TrieNode node, String key, int index) {
+    private TrieNode delete(TrieNode node, String key, int depth) {
         if (node == null) return null;
 
-        if (index == key.length()) {
+        if (depth == key.length()) {
             node.value = null;
+            size--;
         } else {
-            char ch = key.charAt(index);
-            node.next[ch - 'a'] = delete(node.next[ch - 'a'], key, index + 1);
+            char ch = key.charAt(depth);
+            node.next[ch - 'a'] = delete(node.next[ch - 'a'], key, depth + 1);
         }
 
-        if (node.value != null) return node;
+        if (node.value != null) {
+            return node;
+        }
 
         for (TrieNode n: node.next) {
             if (n != null) return node;
@@ -95,7 +112,7 @@ public class RWayTrie<T> implements Trie<T> {
         return wordsWithPrefix("");
     }
 
-    public Iterable<String> wordsWithPrefix(String pref) {
+    public Iterable<String> wordsWithPrefix(final String pref) {
 
         return new Iterable<String>() {
 
@@ -109,8 +126,10 @@ public class RWayTrie<T> implements Trie<T> {
                         q.add(new Tuple(pref, get(root, pref, 0)));
                     }
 
+
                     public boolean hasNext() {
 
+                        //if we have not prefix to return - start search for next prefix
                         if (lastPref == null) {
                             while (!q.isEmpty()) {
                                 Tuple<TrieNode> currTuple = q.poll();
@@ -128,7 +147,8 @@ public class RWayTrie<T> implements Trie<T> {
                                     break;
                                 }
                             }
-                            if (lastPref == null) return false;
+
+                            if (lastPref == null) return false; //if we traverse whole trie
                             return true;
                         }
 
@@ -136,10 +156,12 @@ public class RWayTrie<T> implements Trie<T> {
                     }
 
                     public String next() {
-                        if (!this.hasNext()) {
+
+                        if (!this.hasNext()) { //nothing to return
                             throw new NoSuchElementException();
                         }
 
+                        //return current prefix
                         String res = lastPref;
                         lastPref = null;
                         return res;

@@ -1,5 +1,9 @@
 package trie;
 
+/**
+ * Pair of word and word weight
+ * @param <T> weight type
+ */
 public class Tuple<T> {
 
     private String term;

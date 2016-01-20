@@ -22,11 +22,13 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="true" />
+        <module name="autocomplete" />
         <module name="epam_autocomplete" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="epam_autocomplete" target="1.8" />
+      <module name="autocomplete" target="1.5" />
+      <module name="epam_autocomplete" target="1.5" />
     </bytecodeTargetLevel>
   </component>
 </project>
