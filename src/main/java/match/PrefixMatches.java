@@ -4,19 +4,21 @@ import trie.RWayTrie;
 import trie.Trie;
 import trie.Tuple;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
+import java.util.NoSuchElementException;
 
 public class PrefixMatches {
 
     private Trie trie;
 
+    private static final int PREFIX_MIN_LENGTH = 3;
+    private static final int DEFAULT_LENGHTS_NUM = 3;
+
     public PrefixMatches() {
         trie = new RWayTrie<Integer>();
     }
 
-    public int add(String... strings) {
+    public int add(final String... strings) {
         int prevSize = trie.size();
         for (String str: strings) {
             str = str.toLowerCase();
@@ -24,12 +26,12 @@ public class PrefixMatches {
             if (str.indexOf(' ') != -1) {
                 String[] words = str.split(" ");
                 for (String word: words) {
-                    if (word.length() > 2) {
+                    if (word.length() >= PREFIX_MIN_LENGTH) {
                         trie.add(new Tuple<Integer>(word, word.length()));
                     }
                 }
             } else {
-                if (str.length() > 2) {
+                if (str.length() >= PREFIX_MIN_LENGTH) {
                     trie.add(new Tuple<Integer>(str, str.length()));
                 }
             }
@@ -37,11 +39,11 @@ public class PrefixMatches {
         return trie.size() - prevSize;
     }
 
-    public boolean contains(String word) {
+    public boolean contains(final String word) {
         return trie.contains(word);
     }
 
-    public boolean delete(String word) {
+    public boolean delete(final String word) {
         return trie.delete(word);
     }
 
@@ -49,34 +51,47 @@ public class PrefixMatches {
         return trie.size();
     }
 
-    public Iterable<String> wordsWithPrefix(String pref, int k) {
-        List<String> result = new ArrayList();
-        int n = 0;
-        int lastLength = 0;
+    public Iterable<String> wordsWithPrefix(final String pref, final int k) {
+        return new Iterable<String>() {
 
-        if (pref.length() >= 2) {
+            public Iterator<String> iterator() {
 
-            Iterator<String> it = trie.wordsWithPrefix(pref).iterator();
-            while (it.hasNext()) {
-                String next = it.next();
 
-                if (next.length() > lastLength) {
-                    n++;
-                    lastLength = next.length();
-                }
+                return new Iterator<String>() {
 
-                if (n == k + 1) {
-                    break;
-                }
+                    private Iterator<String> trieIt = trie.wordsWithPrefix(pref).iterator();
+                    private int changes = 0;
+                    private int lastLen = 0;
 
-                result.add(next);
+
+                    public boolean hasNext() {
+                        return trieIt.hasNext() && changes != k;
+                    }
+
+                    public String next() {
+                        String curr = trieIt.next();
+
+                        if (curr.length() > lastLen) {
+                            lastLen = curr.length();
+                            changes++;
+                        }
+
+                        if (changes == k) {
+                            throw new NoSuchElementException();
+                        }
+
+                        return curr;
+                    }
+
+                    public void remove () {
+                        trieIt.remove();
+                    }
+                };
             }
-        }
+        };
+    }
 
-        return result;
-    };
-
-    public Iterable<String> wordsWithPrefix(String pref) {
-        return wordsWithPrefix(pref, 3);
+    public Iterable<String> wordsWithPrefix(final String pref) {
+        return wordsWithPrefix(pref, DEFAULT_LENGHTS_NUM);
     }
 }

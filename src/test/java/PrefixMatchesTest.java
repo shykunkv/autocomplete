@@ -1,55 +1,64 @@
 import match.PrefixMatches;
+import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-import trie.Trie;
-import trie.Tuple;
 
-import static org.mockito.Mockito.*;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
+public class PrefixMatchesTest extends Assert {
 
-@RunWith(MockitoJUnitRunner.class)
-public class PrefixMatchesTest {
+    @Test
+    public void addStringsWithUnacceptableLength() {
+        PrefixMatches testMatcher = new PrefixMatches();
+        String[] strings = {"", "a", "aa"};
+        int expectedSize = 0;
 
-    @Mock
-    Trie trieMock;
+        testMatcher.add(strings);
 
-    @InjectMocks
-    PrefixMatches testMatch;
+        assertEquals("Must not add words with length smaller than 3", expectedSize, testMatcher.size());
+    }
 
 
     @Test
-    public void sizeInvokeTrieSizeTest() {
-        testMatch.size();
-        verify(trieMock).size();
+    public void addStringsWithAcceptableLength() {
+        PrefixMatches testMatcher = new PrefixMatches();
+        String[] strings = {"abc", "abcd", "abcdef"};
+
+        int expectedSize = testMatcher.add(strings);
+
+        assertEquals("Matcher must add words longer than 2", expectedSize, testMatcher.size());
     }
+
 
     @Test
-    public void containsInvokeTrieContains() {
-        testMatch.contains("test");
-        verify(trieMock).contains(anyString());
+    public void addTwoEqualsWords() {
+        PrefixMatches testMatcher = new PrefixMatches();
+        String[] strings = {"abc", "abc"};
+
+        int expectedSize = testMatcher.add(strings);
+
+        assertEquals("Matcher must not add words that already exist in trie", expectedSize, testMatcher.size());
     }
 
-    @Test
-    public void deleteInvokedTrieDeleteTest() {
-        testMatch.delete("test");
-        verify(trieMock).delete("test");
+    @Test(expected = NoSuchElementException.class)
+    public void wordsWithUnexistingPrefix() {
+        PrefixMatches testMatcher = new PrefixMatches();
+        String[] strings = {"abc", "cde", "fgh"};
+
+        testMatcher.add(strings);
+        Iterator<String> it = testMatcher.wordsWithPrefix("zx").iterator();
+
+        it.next();
     }
 
-    @Test
-    public void addInvokeTrieAdd() {
-        String[] strings = {"abc", "abcd", "abcde", "abcdef"};
-        testMatch.add(strings);
-        verify(trieMock, atLeast(1)).add(any(Tuple.class));
-    }
 
-    @Test
-    public void addWithWrongInputDoesntInvokeTrieAdd() {
-        String[] strings = {"ab", "ad", "a", ""};
-        testMatch.add(strings);
-        verify(trieMock, never()).add(any(Tuple.class));
-    }
+    public void wordsWithExistingPrefix() {
+        PrefixMatches testMatcher = new PrefixMatches();
+        String[] strings = {"abc", "abcd", "abcdef"};
 
+        testMatcher.add(strings);
+        Iterator<String> it = testMatcher.wordsWithPrefix("ab").iterator();
+
+        assertTrue(it.hasNext());
+    }
 }

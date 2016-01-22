@@ -1,11 +1,10 @@
 package trie;
 
 
+import java.util.ArrayDeque;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import java.util.Queue;
-
 
 /**
  * Implementation of the trie
@@ -14,7 +13,7 @@ import java.util.Queue;
 public class RWayTrie<T> implements Trie<T> {
 
     private static int R = 26; // number of possible childs for every node
-    private TrieNode root; // trie root
+    private TrieNode<T> root; // trie root
     private int size; // number of words in trie
 
     public RWayTrie() {
@@ -22,15 +21,15 @@ public class RWayTrie<T> implements Trie<T> {
     }
 
 
-    private class TrieNode {
+    private static class TrieNode<E> {
         /**
          * Mark that some nodes are last letters in words
          */
-        private T value;
+        private E value;
         /**
          * Next letters
          */
-        private TrieNode[] next;
+        private TrieNode<E>[] next;
 
         private TrieNode() {
             next = (TrieNode[]) new RWayTrie.TrieNode[R];
@@ -60,7 +59,7 @@ public class RWayTrie<T> implements Trie<T> {
         return node;
     }
 
-    private T get(String key) {
+    private Object get(String key) {
         TrieNode node = get(root, key, 0);
         if (node == null) return null;
         return node.value;
@@ -119,52 +118,35 @@ public class RWayTrie<T> implements Trie<T> {
             public Iterator<String> iterator() {
                 return new Iterator<String>() {
 
-                    private Queue<Tuple<TrieNode>> q = new LinkedList();
-                    private String lastPref;
+                    private Queue<Tuple<TrieNode>> q = new ArrayDeque<Tuple<TrieNode>>();
 
                     {
                         q.add(new Tuple(pref, get(root, pref, 0)));
                     }
 
-
                     public boolean hasNext() {
-
-                        //if we have not prefix to return - start search for next prefix
-                        if (lastPref == null) {
-                            while (!q.isEmpty()) {
-                                Tuple<TrieNode> currTuple = q.poll();
-                                TrieNode currNode = currTuple.getWeight();
-                                String currPref = currTuple.getTerm();
-                                if (currNode == null) continue;
-
-                                for (char c = 0; c < R; c++) {
-                                    if (currNode.next[c] != null) {
-                                        q.add(new Tuple(currPref + (char) (c + 'a'), currNode.next[c]));
-                                    }
-                                }
-                                if (currNode.value != null) {
-                                    lastPref = currPref;
-                                    break;
-                                }
-                            }
-
-                            if (lastPref == null) return false; //if we traverse whole trie
-                            return true;
-                        }
-
-                        return true;
+                        return !q.isEmpty();
                     }
 
                     public String next() {
 
-                        if (!this.hasNext()) { //nothing to return
-                            throw new NoSuchElementException();
+                        while (!q.isEmpty()) {
+                            Tuple<TrieNode> currTuple = q.poll();
+                            TrieNode currNode = currTuple.getWeight();
+                            String currPref = currTuple.getTerm();
+                            if (currNode == null) continue;
+
+                            for (char c = 0; c < R; c++) {
+                                if (currNode.next[c] != null) {
+                                    q.add(new Tuple(currPref + (char) (c + 'a'), currNode.next[c]));
+                                }
+                            }
+                            if (currNode.value != null) {
+                                return currPref;
+                            }
                         }
 
-                        //return current prefix
-                        String res = lastPref;
-                        lastPref = null;
-                        return res;
+                        throw new NoSuchElementException();
                     }
 
                     public void remove() {
