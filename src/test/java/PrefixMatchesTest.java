@@ -51,7 +51,7 @@ public class PrefixMatchesTest extends Assert {
         it.next();
     }
 
-
+    @Test
     public void wordsWithExistingPrefix() {
         PrefixMatches testMatcher = new PrefixMatches();
         String[] strings = {"abc", "abcd", "abcdef"};
@@ -60,5 +60,21 @@ public class PrefixMatchesTest extends Assert {
         Iterator<String> it = testMatcher.wordsWithPrefix("ab").iterator();
 
         assertTrue(it.hasNext());
+    }
+
+
+    @Test
+    public void test() {
+        PrefixMatches testMatcher = new PrefixMatches();
+        String[] strings = {"abc", "abcd", "abced"};
+        int expectedSize = 5;
+
+
+        testMatcher.add(strings);
+        Iterator<String> it = testMatcher.wordsWithPrefix("ab", 2).iterator();
+        it.next();
+        it.next();
+
+        assertFalse(it.hasNext());
     }
 }

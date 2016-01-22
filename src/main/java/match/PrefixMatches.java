@@ -2,7 +2,7 @@ package match;
 
 import trie.RWayTrie;
 import trie.Trie;
-import trie.Tuple;
+import utils.Tuple;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -60,24 +60,35 @@ public class PrefixMatches {
                 return new Iterator<String>() {
 
                     private Iterator<String> trieIt = trie.wordsWithPrefix(pref).iterator();
-                    private int changes = 0;
-                    private int lastLen = 0;
+                    private int changes = 1;
+                    private String next;
 
+                    {
+                        if (trieIt.hasNext()) {
+                            next = trieIt.next();
+                        }
+                    }
 
                     public boolean hasNext() {
-                        return trieIt.hasNext() && changes != k;
+                        return next != null;
                     }
 
                     public String next() {
-                        String curr = trieIt.next();
 
-                        if (curr.length() > lastLen) {
-                            lastLen = curr.length();
-                            changes++;
-                        }
+                        if (next == null) throw new NoSuchElementException();
 
-                        if (changes == k) {
-                            throw new NoSuchElementException();
+                        String curr = next;
+
+                        if (trieIt.hasNext()) {
+                            next = trieIt.next();
+                            if (next.length() != curr.length()) {
+                                changes++;
+                            }
+                            if (changes == k + 1) {
+                                next = null;
+                            }
+                        } else {
+                            next = null;
                         }
 
                         return curr;

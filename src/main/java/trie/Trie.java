@@ -1,5 +1,7 @@
 package trie;
 
+import utils.Tuple;
+
 /**
  * Represent prefix tree to effective word search
  * @param <T> type of words weight

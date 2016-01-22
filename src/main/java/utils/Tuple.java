@@ -1,4 +1,4 @@
-package trie;
+package utils;
 
 /**
  * Pair of word and word weight

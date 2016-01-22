@@ -1,7 +1,7 @@
 import org.junit.Assert;
 import org.junit.Test;
 import trie.RWayTrie;
-import trie.Tuple;
+import utils.Tuple;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 

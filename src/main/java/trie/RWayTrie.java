@@ -1,6 +1,8 @@
 package trie;
 
 
+import utils.Tuple;
+
 import java.util.ArrayDeque;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
